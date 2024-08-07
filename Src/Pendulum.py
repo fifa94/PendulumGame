@@ -12,18 +12,21 @@ class Pendulum_nonlinear_model:
         # Definice systému diferenciálních rovnic
     def equations_nonlinear(self, y, t):
         theta, omega = y
+        #  derivace theta a omega
         dtheta_dt = omega
         domega_dt = - (self.g / self.l) * np.sin(theta) - self.b * omega
         return [dtheta_dt, domega_dt]
     
     def run (self, phi0, omega0, t0, tf, dt):
+        # vytvoreni pole casu
         t = np.arange(t0, tf, dt)
         theta = np.zeros_like(t)
         omega = np.zeros_like(t)
+        # zapis pocatecnich podminek
         y0 = [phi0, omega0]
         theta[0] = phi0
         omega[0] = omega0
-
+        # reseni rovnic
         theta, omega = odeint(self.equations_nonlinear, y0, t).T
 
         return theta, omega, t
