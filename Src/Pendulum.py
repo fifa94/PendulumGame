@@ -17,7 +17,7 @@ class Pendulum_nonlinear_model:
         domega_dt = - (self.g / self.l) * np.sin(theta) - self.b * omega
         return [dtheta_dt, domega_dt]
     
-    def run (self, phi0, omega0, t0, tf, dt):
+    def update (self, phi0, omega0, t0, tf, dt):
         # vytvoreni pole casu
         t = np.arange(t0, tf, dt)
         theta = np.zeros_like(t)
