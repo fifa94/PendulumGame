@@ -4,10 +4,12 @@ from scipy.integrate import odeint
 
 class Pendulum_nonlinear_model:
 
-    def __init__(self, g, l, b):
+    def __init__(self, g, l, b, theta0, omega0):
         self.g = g
         self.l = l
         self.b = b
+        self.theta = theta0
+        self.omega = omega0
 
         # Definice systému diferenciálních rovnic
     def equations_nonlinear(self, y, t):
@@ -17,19 +19,19 @@ class Pendulum_nonlinear_model:
         domega_dt = - (self.g / self.l) * np.sin(theta) - self.b * omega
         return [dtheta_dt, domega_dt]
     
-    def update (self, phi0, omega0, t0, tf, dt):
-        # vytvoreni pole casu
-        t = np.arange(t0, tf, dt)
-        theta = np.zeros_like(t)
-        omega = np.zeros_like(t)
-        # zapis pocatecnich podminek
-        y0 = [phi0, omega0]
-        theta[0] = phi0
-        omega[0] = omega0
-        # reseni rovnic
-        theta, omega = odeint(self.equations_nonlinear, y0, t).T
+    def update (self, dt=0.01):
+        t = np.arange(0, dt, 0.01)
+        # Řešení diferenciálních rovnic
+        solution = odeint(self.equations_nonlinear, [self.theta, self.omega], t)
+        # Aktualizace theta a omega na poslední hodnoty
+        self.theta, self.omega = solution[-1]
+        return solution[:, 0], solution[:, 1]  # vrací theta a omega
 
-        return theta, omega, t
+    def get_positions(self, width, height): # Vrací pozice na základě aktuálních hodnot theta a omega
+        # Používá aktuální hodnoty theta
+        x = width / 2 + self.l * np.sin(self.theta) * 100
+        y = height / 2 - self.l * np.cos(self.theta) * 100
+        return int(x), int(y)
 
 class Pendulum_linear_model:
 

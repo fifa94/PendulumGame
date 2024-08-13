@@ -1,6 +1,8 @@
 import pygame
 import Pendulum
 import ButtonsGeneral
+from pygame.locals import *
+import numpy as np
 
 class Game:
     def __init__(self):
@@ -11,17 +13,16 @@ class Game:
         self.clock = pygame.time.Clock()
         self.menu_back_ground = 215, 25, 25
         self.game_back_ground = 255, 255, 255
-        #self.pendulum = Pendulum(g=9.81, l=1.0, b=0.1)
-
+        self.pendulum = Pendulum.Pendulum_nonlinear_model(g=9.81, l=1.0, b=0.8, theta0=np.pi, omega0=1.0)
 
     def run(self):
-
-        play_btn = ButtonsGeneral.Button(225, 200, 'Play')
-        quit_btn = ButtonsGeneral.Button(225, 300, 'Quit')
-
+   
         running = True
 
         menu_state = 'Menu'
+
+        play_btn = ButtonsGeneral.Button(300, 200, 'Play')
+        quit_btn = ButtonsGeneral.Button(300, 200 + 70, 'Quit')
 
         while running:
 
@@ -39,16 +40,20 @@ class Game:
 
             if menu_state == 'Game':
                 self.screen.fill(self.game_back_ground)
+                self.pendulum.update(self.clock.tick(60) / 1000)
+                x,y = self.pendulum.get_positions(self.screen.get_width(), self.screen.get_height())
+                  # Ladicí výstup pro kontrolu
+                print(f"Theta: {self.pendulum.theta}, Omega: {self.pendulum.omega}")
+                print(f"Position: x={x}, y={y}")
 
+                      # Vykreslení kyvadla
+                pygame.draw.line(self.screen, (0, 0, 0), (self.screen.get_width() // 2, self.screen.get_height() // 2), (x, y), 2)
+                pygame.draw.circle(self.screen, (255, 0, 0), (x, y), 10)
 
             for event in pygame.event.get():
-                print(event)
+                #print(event)
                 if event.type == pygame.QUIT:
                     running = False
-
-            #self.pendulum.update(dt=0.01)
-            #self.screen.fill((255, 255, 255))
-            # Zde můžeš přidat kód pro vykreslení kyvadla
 
             pygame.display.flip()
             self.clock.tick(60)
