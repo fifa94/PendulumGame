@@ -10,16 +10,17 @@ class Pendulum_nonlinear_model:
         self.b = b
         self.theta = theta0
         self.omega = omega0
-
+        self.external_force = 0
         # Definice systému diferenciálních rovnic
     def equations_nonlinear(self, y, t):
         theta, omega = y
         #  derivace theta a omega
         dtheta_dt = omega
-        domega_dt = - (self.g / self.l) * np.sin(theta) - self.b * omega
+        domega_dt = + (self.g / self.l) * np.sin(theta) - self.b * omega + self.external_force
         return [dtheta_dt, domega_dt]
     
-    def update (self, dt=0.01):
+    def update (self, dt=0.01, external_force=0):
+        self.external_force = external_force
         t = np.arange(0, dt, 0.01)
         # Řešení diferenciálních rovnic
         solution = odeint(self.equations_nonlinear, [self.theta, self.omega], t)
@@ -27,10 +28,14 @@ class Pendulum_nonlinear_model:
         self.theta, self.omega = solution[-1]
         return solution[:, 0], solution[:, 1]  # vrací theta a omega
 
-    def get_positions(self, width, height): # Vrací pozice na základě aktuálních hodnot theta a omega
-        # Používá aktuální hodnoty theta
-        x = width / 2 + self.l * np.sin(self.theta) * 100
-        y = height / 2 - self.l * np.cos(self.theta) * 100
+    def get_positions(self, width, height):
+        # Oprava orientace o 90° pro správnou svislou pozici kyvadla
+        # Posun o 90° zajišťuje, že výchozí pozice bude dolů
+        adjusted_theta = self.theta - np.pi/2 
+        
+        # Vypočtení souřadnic
+        x = width / 2 + self.l * np.cos(adjusted_theta) * 100
+        y = height / 2 + self.l * np.sin(adjusted_theta) * 100
         return int(x), int(y)
 
 class Pendulum_linear_model:
