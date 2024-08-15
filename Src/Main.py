@@ -5,6 +5,7 @@ from pygame.locals import *
 import numpy as np
 from CircularTarget import CircularTarget
 
+
 class Game:
     def __init__(self):
         pygame.init()
@@ -33,16 +34,16 @@ class Game:
 
         play_btn = ButtonsGeneral.Button(300, 200, 'Play')
         quit_btn = ButtonsGeneral.Button(300, 200 + 70, 'Quit')
-
+        # interni promenne
         external_force = 0
         increment_force = 0
         score = 0
-
+        # list kde jsou ulozeny pozice pro vykresleni trajektorie
         points = []
         max_points = 50  # Maximální počet bodů v trajektorii
 
         while running:
-
+            # detekce zmacknuti klavesy
             pressed = pygame.key.get_pressed()
 
             # main menu screen
@@ -56,17 +57,21 @@ class Game:
                     running = False
 
             if menu_state == 'Game':
-                self.screen.fill(self.game_back_ground)
-                self.pendulum.update(self.clock.tick(60) / 1000, external_force)
-                x, y = self.pendulum.get_positions(self.screen.get_width(), self.screen.get_height())
-                points.append((x, y))
-
-                if len(points) > max_points:
-                    points.pop(0)
-
+                # navrat do hlavniho menu
                 if pressed[pygame.K_SPACE]:
                     menu_state = 'Menu'
-
+                # Naplneni pozadi bilou barvou
+                self.screen.fill(self.game_back_ground)
+                # update pozice kyvadla
+                self.pendulum.update(self.clock.tick(60) / 1000, external_force)
+                # ziskavani aktualnich bodu kyvadla
+                x, y = self.pendulum.get_positions(self.screen.get_width(), self.screen.get_height())
+                # zapisovani aktualni pozice kyvadla do pole pro vykresleni trajektori
+                points.append((x, y))
+                # vyhazovani bodu trajektorie, ktere jiz nejsou potreba
+                if len(points) > max_points:
+                    points.pop(0)
+                # vykresneni kruku, po kterem se kyvadlo pohybuje
                 self.circularTarget.draw_circle()
                 # Vykreslení kyvadla
                 pygame.draw.line(self.screen, (0, 0, 0), (self.screen.get_width() // 2, self.screen.get_height() // 2), (x, y), 4)
@@ -75,11 +80,11 @@ class Game:
                 text_surface_increment_force = self.font.render(f'increment force : {increment_force:.2f}', True, (0, 0, 0))
                 text_surface_external_force = self.font.render(f'external force: {external_force:.2f}', True, (0, 0, 0))
                 text_surface_score = self.font.render(f'score: {external_force}', True, (0, 0, 0))
-
+                # samotne vykresleni textu
                 self.screen.blit(text_surface_increment_force, (100, 25))
                 self.screen.blit(text_surface_external_force, (100, 50))
                 self.screen.blit(text_surface_score, (100, 100))
-
+                # Vykresleni trajektorie kyvadla
                 for i in range(len(points) - 1):
                     alpha = int(255 * (i / len(points)))  # Výpočet alfa hodnoty
                     color = (255, 0, 0, alpha)
@@ -107,6 +112,7 @@ class Game:
             pygame.display.update()
 
         pygame.quit()
+
 
 if __name__ == '__main__':
     game = Game()
