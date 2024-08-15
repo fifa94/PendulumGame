@@ -29,6 +29,9 @@ class Game:
         increment_force = 0
         score = 0
 
+        points = []
+        max_points = 50  # Maximální počet bodů v trajektorii
+
         while running:
 
             # main menu screen
@@ -47,6 +50,10 @@ class Game:
                 self.screen.fill(self.game_back_ground)
                 self.pendulum.update(self.clock.tick(60) / 1000, external_force)
                 x,y = self.pendulum.get_positions(self.screen.get_width(), self.screen.get_height())
+                points.append((x, y))
+                if len(points) > max_points:
+                    points.pop(0)
+
                 # Ladicí výstup pro kontrolu
                 #print(f"Theta: {self.pendulum.theta}, Omega: {self.pendulum.omega}")
                 #print(f"Position: x={x}, y={y}")
@@ -62,6 +69,11 @@ class Game:
                 self.screen.blit(text_surface_increment_force, (100, 25))
                 self.screen.blit(text_surface_external_force, (100, 50))
                 self.screen.blit(text_surface_score, (100, 100))
+
+                for i in range(len(points) - 1):
+                    alpha = int(255 * (i / len(points)))  # Výpočet alfa hodnoty
+                    color = (255, 0, 0, alpha)
+                    pygame.draw.line(self.screen, color, points[i], points[i + 1], 2)
 
             for event in pygame.event.get():
                 #print(event)
