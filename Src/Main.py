@@ -3,6 +3,7 @@ import Pendulum
 import ButtonsGeneral
 from pygame.locals import *
 import numpy as np
+from CircularTarget import CircularTarget
 
 class Game:
     def __init__(self):
@@ -11,10 +12,18 @@ class Game:
         self.surface = pygame.Surface((800, 600))
         pygame.display.set_caption('Pendulum Simulation')
         self.clock = pygame.time.Clock()
-        self.menu_back_ground = 215, 25, 25
+        self.menu_background = pygame.image.load('Images/pendulumBackGround.jpg')
         self.game_back_ground = 255, 255, 255
         self.pendulum = Pendulum.Pendulum_nonlinear_model(g=9.81, l=2.0, b=0.8, theta0=np.pi/4, omega0=1.0)
         self.font = pygame.font.Font(None, 36)
+        self.circularTarget = CircularTarget(self.screen,
+                                             color=(0, 0, 0),
+                                             center=(self.screen.get_width() // 2,
+                                                     self.screen.get_height() // 2),
+                                             radius=self.pendulum.l * 100,
+                                             width=2)
+        icon = pygame.image.load('Images/pendulum.png')
+        pygame.display.set_icon(icon)
 
     def run(self):
    
@@ -34,13 +43,13 @@ class Game:
 
         while running:
 
+            pressed = pygame.key.get_pressed()
+
             # main menu screen
             if menu_state == 'Menu':
-                self.screen.fill(self.menu_back_ground)
+                self.screen.blit(self.menu_background, (0, 0))
 
-                pressed = pygame.key.get_pressed()
-
-                if play_btn.draw_button(self.screen) or pressed[pygame.K_SPACE]:
+                if play_btn.draw_button(self.screen):
                     menu_state = 'Game'
 
                 if quit_btn.draw_button(self.screen):
@@ -49,21 +58,22 @@ class Game:
             if menu_state == 'Game':
                 self.screen.fill(self.game_back_ground)
                 self.pendulum.update(self.clock.tick(60) / 1000, external_force)
-                x,y = self.pendulum.get_positions(self.screen.get_width(), self.screen.get_height())
+                x, y = self.pendulum.get_positions(self.screen.get_width(), self.screen.get_height())
                 points.append((x, y))
+
                 if len(points) > max_points:
                     points.pop(0)
 
-                # Ladicí výstup pro kontrolu
-                #print(f"Theta: {self.pendulum.theta}, Omega: {self.pendulum.omega}")
-                #print(f"Position: x={x}, y={y}")
+                if pressed[pygame.K_SPACE]:
+                    menu_state = 'Menu'
 
+                self.circularTarget.draw_circle()
                 # Vykreslení kyvadla
-                pygame.draw.line(self.screen, (0, 0, 0), (self.screen.get_width() // 2, self.screen.get_height() // 2), (x, y), 2)
+                pygame.draw.line(self.screen, (0, 0, 0), (self.screen.get_width() // 2, self.screen.get_height() // 2), (x, y), 4)
                 pygame.draw.circle(self.screen, (255, 0, 0), (x, y), 10)
                 # Vykreslení textu
-                text_surface_increment_force  = self.font.render(f'increment force : {increment_force:.2f}', True, (0, 0, 0))
-                text_surface_external_force = self.font.render(f'exteranl force: {external_force:.2f}', True, (0, 0, 0))
+                text_surface_increment_force = self.font.render(f'increment force : {increment_force:.2f}', True, (0, 0, 0))
+                text_surface_external_force = self.font.render(f'external force: {external_force:.2f}', True, (0, 0, 0))
                 text_surface_score = self.font.render(f'score: {external_force}', True, (0, 0, 0))
 
                 self.screen.blit(text_surface_increment_force, (100, 25))
@@ -73,17 +83,15 @@ class Game:
                 for i in range(len(points) - 1):
                     alpha = int(255 * (i / len(points)))  # Výpočet alfa hodnoty
                     color = (255, 0, 0, alpha)
-                    pygame.draw.line(self.screen, color, points[i], points[i + 1], 2)
+                    pygame.draw.line(self.screen, color, points[i], points[i + 1], 3)
 
             for event in pygame.event.get():
-                #print(event)
+                print(event)
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
-                    if event.key == pygame.K_SPACE:
-                        menu_state = 'Menu'
                     if event.key == pygame.K_UP:
                         increment_force += 0.1
                     if event.key == pygame.K_DOWN:
