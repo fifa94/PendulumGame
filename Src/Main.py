@@ -38,6 +38,10 @@ class Game:
         external_force = 0
         increment_force = 0
         score = 0
+        pendulum_in_region = False
+        delay_time = 1000  # Zpoždění 1 sekunda (v milisekundách)
+        x_bounds = (382, 418)
+        y_bounds = (98, 102)
         # list kde jsou ulozeny pozice pro vykresleni trajektorie
         points = []
         max_points = 50  # Maximální počet bodů v trajektorii
@@ -66,6 +70,19 @@ class Game:
                 self.pendulum.update(self.clock.tick(60) / 1000, external_force)
                 # ziskavani aktualnich bodu kyvadla
                 x, y = self.pendulum.get_positions(self.screen.get_width(), self.screen.get_height())
+                # detekce pozice kyvadla v regiony na pricitani bodu
+                if ((x >= x_bounds[0]) and (x <= x_bounds[1]) and (y >= y_bounds[0]) and (y <= y_bounds[1])):
+                    if not pendulum_in_region:
+                        # Pokud hráč vstoupil do regionu poprvé, zaznamená se čas
+                        enter_time = pygame.time.get_ticks()
+                        pendulum_in_region = True
+                    elif pygame.time.get_ticks() - enter_time >= delay_time:
+                        # Pokud je hráč v regionu déle než 1 sekundu, přičti skóre
+                        score += 1
+                        print(f"Skóre: {score}")
+                        pendulum_in_region = False  # Znovu nenastaví čas, dokud hráč neopustí a nevstoupí znovu
+                else:
+                    pendulum_in_region = False
                 # zapisovani aktualni pozice kyvadla do pole pro vykresleni trajektori
                 points.append((x, y))
                 # vyhazovani bodu trajektorie, ktere jiz nejsou potreba
@@ -79,7 +96,7 @@ class Game:
                 # Vykreslení textu
                 text_surface_increment_force = self.font.render(f'increment force : {increment_force:.2f}', True, (0, 0, 0))
                 text_surface_external_force = self.font.render(f'external force: {external_force:.2f}', True, (0, 0, 0))
-                text_surface_score = self.font.render(f'score: {external_force}', True, (0, 0, 0))
+                text_surface_score = self.font.render(f'score: {score}', True, (0, 0, 0))
                 # samotne vykresleni textu
                 self.screen.blit(text_surface_increment_force, (100, 25))
                 self.screen.blit(text_surface_external_force, (100, 50))
@@ -91,7 +108,7 @@ class Game:
                     pygame.draw.line(self.screen, color, points[i], points[i + 1], 3)
 
             for event in pygame.event.get():
-                print(event)
+                #print(event)
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.KEYDOWN:
