@@ -11,3 +11,7 @@ $$
 
 Ze samotné hry lze vystoupit pomocí mezerníku nebo zmáčknutím křížku v okně.  
 Momentálně hra nabízí dva modely kyvadla: lineární a nelineární model. Zatím je implementován pouze nelineární model.
+## Co je potbné dělat pro spustění hry
+1. Nainstalovat všechny závislosti pomocí `pip install -r requirements.txt`
+2. Spustit hru pomocí `python main.py`
+
